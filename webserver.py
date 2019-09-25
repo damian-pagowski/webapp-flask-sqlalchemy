@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from db_server import create_session
 from database_setup import Restaurant, MenuItem
 
@@ -6,9 +6,19 @@ session = create_session()
 app = Flask(__name__)
 
 
-@app.route('/restaurants/<int:restaurant_id>/new')
+@app.route('/restaurants/<int:restaurant_id>/new', methods=['GET', 'POST'])
 def newMenuItem(restaurant_id):
-    return "page to create a new menu item. Task 1 complete!"
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        price = request.form['price']
+
+        newItem = MenuItem(name=name, restaurant_id=restaurant_id, price=price, description=description)
+        session.add(newItem)
+        session.commit()
+        return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
+    else:
+        return render_template('create_menu_item.html', restaurant_id=restaurant_id)
 
 @app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/edit')
 def editMenuItem(restaurant_id, menu_id):
@@ -20,7 +30,7 @@ def deleteMenuItem(restaurant_id, menu_id):
 
 @app.route('/')
 @app.route('/restaurants/<int:param_restaurant_id>')
-def restaurants(param_restaurant_id = 0):
+def restaurantMenu(param_restaurant_id = 0):
     restaurant = None 
     if param_restaurant_id is not 0:
         restaurant = session.query(Restaurant).filter_by(id=param_restaurant_id).one()
