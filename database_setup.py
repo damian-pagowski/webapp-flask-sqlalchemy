@@ -15,7 +15,6 @@ class Restaurant(Base):
 
 class MenuItem(Base):
     __tablename__ = 'menu_item'
-
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
