@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from db_server import create_session
 # from database_setup import Restaurant, MenuItem
 from database_setup import Base, Restaurant, MenuItem
@@ -30,6 +30,7 @@ def newMenuItem(restaurant_id):
                            price=price, description=description)
         session.add(newItem)
         session.commit()
+        flash("New Menu Item Created!")
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
         return render_template('create_menu_item.html', restaurant_id=restaurant_id)
@@ -49,6 +50,8 @@ def editMenuItem(restaurant_id, menu_id):
 
         session.add(newItem)
         session.commit()
+        flash("Menu Item Updated!")
+
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
         return render_template('edit_menu_item.html', item=newItem, restaurant_id=restaurant_id, menu_id=menu_id)
@@ -59,6 +62,7 @@ def deleteMenuItem(restaurant_id, menu_id):
     item = session.query(MenuItem).filter_by(id=menu_id)
     if request.method == 'POST':
         item.delete()
+        flash("Menu Item Removed!")
         return redirect(url_for('restaurantMenu', restaurant_id=restaurant_id))
     else:
         return render_template('delete.html', item=item, restaurant_id=restaurant_id, menu_id=menu_id)
@@ -78,5 +82,6 @@ def restaurantMenu(param_restaurant_id=0):
 
 
 if __name__ == '__main__':
+    app.secret_key = 'P@ssW0rd'
     app.debug = True
     app.run(host='localhost', port=5000)
