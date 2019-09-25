@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from db_server import create_session
 # from database_setup import Restaurant, MenuItem
 from database_setup import Base, Restaurant, MenuItem
@@ -69,16 +69,25 @@ def deleteMenuItem(restaurant_id, menu_id):
 
 
 @app.route('/')
-@app.route('/restaurants/<int:param_restaurant_id>')
-def restaurantMenu(param_restaurant_id=0):
+@app.route('/restaurants/<int:restaurant_id>')
+def restaurantMenu(restaurant_id=0):
     restaurant = None
-    if param_restaurant_id is not 0:
+    if restaurant_id is not 0:
         restaurant = session.query(Restaurant).filter_by(
-            id=param_restaurant_id).one()
+            id=restaurant_id).one()
     else:
         restaurant = session.query(Restaurant).first()
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant.id)
     return render_template('menu.html', restaurant=restaurant, items=items)
+
+# JSON API
+
+@app.route('/restaurants/<int:restaurant_id>/menu/json')
+def restaurantMenuJSON(restaurant_id):
+    restaurant = session.query(Restaurant).filter_by(
+            id=restaurant_id).one()
+    items = session.query(MenuItem).filter_by(restaurant_id=restaurant.id).all()
+    return jsonify(MenuItems = [i.serialize for i in items])
 
 
 if __name__ == '__main__':
